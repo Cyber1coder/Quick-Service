@@ -27,6 +27,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     enum: ["customer", "worker", "admin"],
   },
+  otp:{
+    type:Number
+  },
   isVerified: { type: Boolean, default: false },
 });
 
