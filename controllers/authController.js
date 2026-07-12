@@ -53,7 +53,9 @@ const register = async (req, res) => {
     }
 
     // Check existing email
-    // Check existing phone number
+
+    
+
     // Verify OTP
 
     bcrypt.hash(password, 10, async function (err, hash) {
@@ -103,31 +105,42 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
+      return res.status(401).json({
+        message: "Invalid email or password",
       });
     }
 
-    bcrypt.compare(password, user.password, function (err, result) {
-      if (err) {
-        return res.status(500).json({
-          message: err.message,
-        });
-      }
+    const isMatch = await bcrypt.compare(password, user.password);
 
-      if (!result) {
-        return res.status(401).json({
-          message: "Invalid Password",
-        });
-      }
-
-      //generate jwt
-      var token = jwt.sign({ user }, process.env.JWT_SECRET_KEY);
-
-
-      return res.status(200).json({
-        message: "Login Successful",
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid email or password",
       });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    return res.status(200).json({
+      message: "Login Successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -135,7 +148,6 @@ const login = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   sendOtp,
   register,
