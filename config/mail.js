@@ -23,6 +23,8 @@ const sendOtpEmail = async (email, otp) => {
   };
 
   await transport.sendMail(mailOption);
+
+  
 };
 
 module.exports = {
